@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Application — Strategy Call</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#FAF6F0;--text:#1C1410;--text-soft:#6B5E52;--text-muted:#A89E94;
+  --accent:#C46B2A;--green:#2A7A4B;--green-light:#E8F5EE;--green-border:#A8D5B8;
+  --red:#C42A2A;--red-light:#FBE8E8;--red-border:#F0AAAA;--border:#EDE6DC;
+  --error:#C42A2A;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:"DM Sans",sans-serif;color:var(--text);}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:430px;margin:0 auto;overflow:hidden;}
+.gradient-bg{position:fixed;inset:0;max-width:430px;margin:0 auto;pointer-events:none;z-index:0;}
+.gradient-bg::before{content:"";position:absolute;top:-20%;left:-30%;width:80%;height:80%;background:radial-gradient(ellipse,rgba(232,149,106,0.28) 0%,transparent 70%);border-radius:50%;animation:float1 8s ease-in-out infinite;}
+.gradient-bg::after{content:"";position:absolute;bottom:-10%;right:-20%;width:70%;height:60%;background:radial-gradient(ellipse,rgba(196,107,42,0.18) 0%,transparent 70%);border-radius:50%;animation:float2 10s ease-in-out infinite;}
+@keyframes float1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8%,5%) scale(1.05)}}
+@keyframes float2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5%,-8%) scale(1.08)}}
+#progress-track{position:relative;z-index:10;display:flex;gap:4px;padding:1rem 1.5rem 0;flex-shrink:0;}
+.prog-seg{height:2.5px;flex:1;border-radius:2px;background:rgba(196,107,42,0.2);transition:background 0.4s ease;}
+.prog-seg.done{background:var(--accent)}
+#screen{flex:1;overflow:hidden;position:relative;z-index:5;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:2rem 1.75rem 5rem;opacity:0;pointer-events:none;transform:translateY(30px);transition:opacity 0.45s cubic-bezier(.4,0,.2,1),transform 0.45s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
+.slide.active{opacity:1;pointer-events:all;transform:translateY(0)}
+.slide.exit-up{opacity:0;transform:translateY(-30px);pointer-events:none;}
+.slide.exit-down{opacity:0;transform:translateY(30px);pointer-events:none;}
+.q-step{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;font-weight:500;}
+.q-text{font-family:"Playfair Display",serif;font-size:clamp(1.5rem,5vw,1.9rem);font-weight:700;color:var(--text);line-height:1.25;margin-bottom:0.5rem;}
+.q-sub{font-size:0.88rem;color:var(--text-muted);line-height:1.6;margin-bottom:2rem;}
+.opts{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;}
+.opt{padding:1rem 1.25rem;background:rgba(255,255,255,0.7);border:1.5px solid var(--border);border-radius:14px;font-size:0.95rem;color:var(--text-soft);cursor:pointer;text-align:left;font-family:"DM Sans",sans-serif;transition:all 0.2s;backdrop-filter:blur(8px);line-height:1.4;}
+.opt:hover{border-color:var(--accent);background:rgba(255,255,255,0.95);color:var(--text)}
+.opt.sel{border-color:var(--accent);background:rgba(255,255,255,0.95);color:var(--text);}
+.opt.sel::after{content:"✓";float:right;color:var(--accent);font-weight:500}
+.q-input{width:100%;padding:1rem 1.25rem;background:rgba(255,255,255,0.7);border:1.5px solid var(--border);border-radius:14px;font-size:0.95rem;font-family:"DM Sans",sans-serif;color:var(--text);backdrop-filter:blur(8px);margin-bottom:1rem;transition:border-color 0.2s;line-height:1.6;}
+.q-input:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,0.95)}
+.q-input::placeholder{color:var(--text-muted)}
+.q-input.error{border-color:var(--error) !important;background:rgba(251,232,232,0.5);}
+textarea.q-input{resize:none;min-height:100px;}
+
+/* Phone */
+.phone-wrap{display:flex;gap:8px;margin-bottom:6px;}
+.country-select{position:relative;flex-shrink:0;}
+.country-btn{display:flex;align-items:center;gap:6px;padding:0 14px;min-height:54px;background:rgba(255,255,255,0.7);border:1.5px solid var(--border);border-radius:14px;font-size:0.95rem;color:var(--text);cursor:pointer;backdrop-filter:blur(8px);transition:border-color 0.2s;white-space:nowrap;font-family:"DM Sans",sans-serif;}
+.country-btn:hover{border-color:var(--accent);}
+.country-btn.auto-changed{border-color:var(--accent);animation:flashGreen 0.5s ease;}
+@keyframes flashGreen{0%{background:rgba(196,107,42,0.15)}100%{background:rgba(255,255,255,0.7)}}
+.cs-arrow{font-size:0.65rem;color:var(--text-muted);}
+.country-dropdown{position:absolute;top:calc(100% + 6px);left:0;background:white;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;z-index:100;box-shadow:0 8px 24px rgba(28,20,16,0.12);min-width:210px;display:none;}
+.country-dropdown.open{display:block;}
+.country-opt{padding:0.75rem 1rem;font-size:0.9rem;color:var(--text-soft);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:background 0.15s;font-family:"DM Sans",sans-serif;}
+.country-opt:hover{background:var(--bg);}
+.dial{color:var(--text-muted);font-size:0.8rem;}
+.phone-wrap .q-input{flex:1;margin-bottom:0;}
+
+/* Phone hint & error */
+.phone-hint{font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem;padding-left:2px;min-height:18px;transition:color 0.2s;}
+.phone-hint.valid{color:var(--green);}
+.phone-hint.invalid{color:var(--error);}
+
+#nav-area{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;padding:1rem 1.75rem 1.75rem;display:flex;align-items:center;justify-content:space-between;z-index:20;background:linear-gradient(to top,var(--bg) 70%,transparent);}
+.btn-back{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.7);border:1.5px solid var(--border);color:var(--text-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.2s;}
+.btn-back:hover{border-color:var(--accent);color:var(--accent)}
+.btn-back:disabled{opacity:0.3;cursor:default}
+.btn-next{width:56px;height:56px;border-radius:50%;background:var(--text);border:none;color:white;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(28,20,16,0.25);transition:all 0.2s;position:relative;overflow:hidden;}
+.btn-next::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,var(--accent) 0%,transparent 70%);opacity:0;transition:opacity 0.3s;}
+.btn-next:hover{transform:scale(1.08)}
+.btn-next:hover::before{opacity:1}
+.cover-slide{text-align:center;justify-content:center;align-items:center;}
+.cover-tag{display:inline-block;font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(196,107,42,0.3);padding:5px 16px;border-radius:50px;margin-bottom:2rem;background:rgba(255,255,255,0.5);backdrop-filter:blur(8px);}
+.cover-title{font-family:"Playfair Display",serif;font-size:clamp(2.4rem,8vw,3rem);font-weight:900;font-style:italic;line-height:1.05;color:var(--text);margin-bottom:1rem;}
+.cover-sub{font-size:0.9rem;color:var(--text-soft);line-height:1.7;max-width:300px;margin:0 auto 2.5rem;}
+.cover-start{display:inline-flex;align-items:center;gap:10px;background:var(--text);color:white;padding:1rem 2rem;border-radius:50px;font-family:"DM Sans",sans-serif;font-size:0.95rem;font-weight:500;border:none;cursor:pointer;box-shadow:0 4px 24px rgba(28,20,16,0.2);transition:transform 0.2s,box-shadow 0.2s;}
+.cover-start:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(28,20,16,0.25)}
+.checking-slide{text-align:center;align-items:center;}
+.check-icon{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.7);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(196,107,42,0.3)}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(196,107,42,0)}}
+.check-title{font-family:"Playfair Display",serif;font-size:1.8rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;line-height:1.2;}
+.check-sub{font-size:0.88rem;color:var(--text-muted);line-height:1.6}
+.check-bar-wrap{width:200px;height:3px;background:rgba(196,107,42,0.15);border-radius:2px;margin:1.5rem auto 0;overflow:hidden;}
+.check-bar{height:100%;background:var(--accent);border-radius:2px;width:0%;animation:load 2.5s ease-out forwards;}
+@keyframes load{0%{width:0%}60%{width:75%}100%{width:100%}}
+.result-slide{overflow-y:auto;justify-content:center;align-items:center;text-align:center;padding-top:2rem;padding-bottom:7rem;}
+.result-header{text-align:center;margin-bottom:2rem;}
+.result-cta-wrap{width:100%;max-width:320px;margin:0 auto;}
+.result-status{display:inline-block;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;padding:5px 16px;border-radius:50px;margin-bottom:0.75rem;font-weight:500;}
+.result-status.admitted{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
+.result-status.declined{background:var(--red-light);color:var(--red);border:1px solid var(--red-border)}
+.result-title{font-family:"Playfair Display",serif;font-size:1.6rem;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:0.5rem;}
+.result-sub{font-size:0.85rem;color:var(--text-muted);line-height:1.6}
+.answers-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
+.answer-card{display:flex;align-items:flex-start;gap:12px;padding:0.85rem 1.1rem;border-radius:14px;border:1.5px solid var(--border);background:white;animation:slideIn 0.4s ease both;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.ans-icon{font-size:0.9rem;margin-top:1px;flex-shrink:0;}
+.ans-body{flex:1}
+.ans-label{font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;}
+.ans-val{font-size:0.88rem;color:var(--text-soft);line-height:1.4}
+.result-cta{display:block;width:100%;padding:1.1rem;font-family:"DM Sans",sans-serif;font-size:0.95rem;font-weight:500;background:var(--text);color:white;border:none;border-radius:14px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 4px 20px rgba(28,20,16,0.2);transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.02em;}
+.result-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(28,20,16,0.25)}
+.scrollbar-hide::-webkit-scrollbar{display:none}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+</style>
+</head>
+<body>
+<div class="gradient-bg"></div>
+<div id="app">
+  <div id="progress-track" style="display:none"></div>
+  <div id="screen">
+    <div class="slide cover-slide active" id="s0">
+      <div class="cover-tag">Free Income Plan Survey</div>
+      <h1 class="cover-title">Want a custom daily plan to reach your income goal?</h1>
+      <p class="cover-sub">Fill this survey to see if I'm the right person to help you.</p>
+      <button class="cover-start" onclick="begin()">Start survey <span>&#8594;</span></button>
+    </div>
+    <div id="q-slides"></div>
+    <div class="slide checking-slide" id="s-check">
+      <div class="check-icon">&#128269;</div>
+      <h2 class="check-title">Reviewing your<br>application&#8230;</h2>
+      <p class="check-sub">Checking your answers<br>and sending your file.</p>
+      <div class="check-bar-wrap"><div class="check-bar"></div></div>
+    </div>
+    <div class="slide result-slide scrollbar-hide" id="s-result"></div>
+  </div>
+  <div id="nav-area" style="display:none">
+    <button class="btn-back" id="btn-back" onclick="goBack()" disabled>&#8592;</button>
+    <button class="btn-next" id="btn-next" onclick="goNext()">&#8594;</button>
+  </div>
+</div>
+<script>
+var WEBHOOK_URL = "https://l2026businessreception.app.n8n.cloud/webhook/72e873f5-279a-42d8-8f22-0ca981dd834b";
+
+// Country config — dial prefix, digit count for local number (after stripping country code)
+var COUNTRIES = [
+  { flag: "CA", emoji: "\uD83C\uDDE8\uD83C\uDDE6", name: "Canada",        dial: "+1",    digits: 10, example: "514 000 0000",  prefixes: ["1"] },
+  { flag: "US", emoji: "\uD83C\uDDFA\uD83C\uDDF8", name: "United States", dial: "+1",    digits: 10, example: "212 000 0000",  prefixes: ["1"] },
+  { flag: "SA", emoji: "\uD83C\uDDF8\uD83C\uDDE6", name: "Saudi Arabia",  dial: "+966",  digits: 9,  example: "050 000 0000", prefixes: ["966", "00966"] }
+];
+
+// Maps a typed prefix to a COUNTRIES index
+// Priority: longest match wins
+var PREFIX_MAP = [
+  { prefix: "00966", idx: 2 },
+  { prefix: "+966",  idx: 2 },
+  { prefix: "966",   idx: 2 },
+  { prefix: "+1",    idx: 0 },
+  { prefix: "1",     idx: 0 },
+];
+
+var questions = [
+  { id:"name",             label:"Full name",            q:"What is your name?",                                                              sub:"So I know who I am talking to.",                              type:"text",   placeholder:"Your first and last name" },
+  { id:"phone",            label:"Phone number",         q:"What is your phone number?",                                                      sub:"WhatsApp preferred.",                                         type:"tel" },
+  { id:"job",              label:"Current job",          q:"How are you currently earning your income?",                                      sub:"What is your job or main activity right now?",                type:"text",   placeholder:"e.g. I work in sales, I drive for Uber, I am a nurse" },
+  { id:"income",           label:"Monthly income",       q:"Roughly how much are you making per month?",                                      sub:"This helps me set realistic expectations with you.",          type:"choice", opts:["More than $1,000/month","Less than $1,000/month"],                                                                                                          disqualify:[1] },
+  { id:"frustration",      label:"Biggest frustration",  q:"What is your biggest frustration with your current situation?",                   sub:"Be honest. This helps me understand where you are at.",       type:"choice", opts:["I don't have enough time - work takes over my life","I'm not making enough money","I have no freedom (schedule or location)","I'm tired of working for someone else","Honestly, a mix of everything"] },
+  { id:"goal",             label:"Online business goal", q:"What would you like to achieve with an online business?",                         sub:"Pick the one that fits you best.",                            type:"choice", opts:["Replace my income entirely","Add an extra source of income on the side"] },
+  { id:"importance",       label:"Importance of change", q:"How important is it for you to change your situation right now?",                 sub:"Be honest with yourself.",                                    type:"choice", opts:["Very important - I want to improve my situation as soon as possible","Not important - I am 100% satisfied with my situation"],                             disqualify:[1] },
+  { id:"commitment_time",  label:"Time commitment",      q:"Are you ready to dedicate time and apply a step-by-step plan if shown to you?",  sub:"No plan works without action. Simple question.",              type:"choice", opts:["Yes","No"],                                                                                                                                          disqualify:[1] },
+  { id:"commitment_invest",label:"Investment mindset",   q:"Building a real business requires a small investment, not like a restaurant, but still real.", sub:"Just to be transparent with you upfront.", type:"choice", opts:["I am open to investing a small amount if it makes sense","I will never invest a single dollar, even if it makes sense"],                             disqualify:[1] }
+];
+
+var answers = {};
+var phoneState = {}; // qi -> { countryIdx, rawInput }
+var cur = 0;
+var isTransitioning = false;
+
+// ─── Phone helpers ───────────────────────────────────────────────────────────
+
+function digitsOnly(str) {
+  return str.replace(/\D/g, "");
+}
+
+// Strip known dial prefix from a digit-only string and return remainder
+function stripDialPrefix(digits, country) {
+  var code = digitsOnly(country.dial); // e.g. "966" or "1"
+  if (digits.startsWith(code)) return digits.slice(code.length);
+  return digits;
+}
+
+// Detect country from raw input. Returns country index or -1.
+function detectCountryFromInput(raw) {
+  // Try longest prefix first
+  for (var i = 0; i < PREFIX_MAP.length; i++) {
+    var entry = PREFIX_MAP[i];
+    if (raw.startsWith(entry.prefix)) return entry.idx;
+  }
+  return -1;
+}
+
+// Validate phone: returns { valid, hint }
+function validatePhone(qi) {
+  var state = phoneState[qi];
+  if (!state) return { valid: false, hint: "" };
+  var country = COUNTRIES[state.countryIdx];
+  var raw = state.rawInput || "";
+  if (!raw) return { valid: false, hint: "" };
+
+  var digits = digitsOnly(raw);
+
+  // Strip country code if user typed it in
+  var local = digits;
+  var codeDigits = digitsOnly(country.dial);
+  if (local.startsWith(codeDigits) && local.length > codeDigits.length) {
+    local = local.slice(codeDigits.length);
+  }
+
+  // Also handle 00 + code prefix (e.g. 00966)
+  var doubleZero = "00" + codeDigits;
+  if (local.startsWith("00" + codeDigits)) {
+    local = local.slice(doubleZero.length);
+  }
+
+  // Saudi: leading 0 is allowed (050…) — strip it if it makes length match
+  if (country.flag === "SA" && local.startsWith("0") && local.length === country.digits + 1) {
+    local = local.slice(1);
+  }
+
+  if (local.length === 0) return { valid: false, hint: "Enter your number — e.g. " + country.example };
+  if (local.length < country.digits) return { valid: false, hint: local.length + " / " + country.digits + " digits" };
+  if (local.length > country.digits) return { valid: false, hint: "Too many digits (" + local.length + " entered, " + country.digits + " expected)" };
+
+  return { valid: true, hint: "✓ Looks good" };
+}
+
+// Save answer + update hint display
+function pickPhone(qi) {
+  var state = phoneState[qi];
+  if (!state) return;
+  var country = COUNTRIES[state.countryIdx];
+  var raw = state.rawInput || "";
+  answers[questions[qi].id] = { val: -1, text: country.dial + " " + raw };
+
+  var hint = document.getElementById("phone-hint-" + qi);
+  var inp  = document.getElementById("inp-" + qi);
+  if (!hint || !inp) return;
+
+  var res = validatePhone(qi);
+  if (!raw) {
+    hint.textContent = "e.g. " + country.example;
+    hint.className = "phone-hint";
+    inp.classList.remove("error");
+  } else if (res.valid) {
+    hint.textContent = res.hint;
+    hint.className = "phone-hint valid";
+    inp.classList.remove("error");
+  } else {
+    hint.textContent = res.hint;
+    hint.className = "phone-hint invalid";
+    inp.classList.remove("error"); // only show red on submit attempt
+  }
+}
+
+// Called on every keystroke — auto-detect country from typed prefix
+function onPhoneInput(qi) {
+  var inp = document.getElementById("inp-" + qi);
+  if (!inp) return;
+  var raw = inp.value;
+  phoneState[qi].rawInput = raw;
+
+  // Try to auto-detect country
+  var detected = detectCountryFromInput(raw.trim());
+  if (detected !== -1 && detected !== phoneState[qi].countryIdx) {
+    // Switch country automatically
+    phoneState[qi].countryIdx = detected;
+    var country = COUNTRIES[detected];
+    var flagEl = document.getElementById("cs-flag-" + qi);
+    var codeEl = document.getElementById("cs-code-" + qi);
+    var cbtn   = document.getElementById("cbtn-" + qi);
+    if (flagEl) flagEl.textContent = country.emoji;
+    if (codeEl) codeEl.textContent = country.dial;
+    if (cbtn) {
+      cbtn.classList.add("auto-changed");
+      setTimeout(function() { cbtn.classList.remove("auto-changed"); }, 600);
+    }
+    // Update placeholder
+    if (inp) inp.placeholder = country.example;
+    // Update hint
+    var hint = document.getElementById("phone-hint-" + qi);
+    if (hint) {
+      hint.textContent = "Switched to " + country.name;
+      hint.className = "phone-hint valid";
+    }
+  }
+
+  pickPhone(qi);
+}
+
+// ─── Slide building ──────────────────────────────────────────────────────────
+
+function buildSlides() {
+  var container = document.getElementById("q-slides");
+  for (var i = 0; i < questions.length; i++) {
+    (function(i) {
+      var q = questions[i];
+      var div = document.createElement("div");
+      div.className = "slide";
+      div.id = "sq-" + i;
+
+      var stepEl = document.createElement("div");
+      stepEl.className = "q-step";
+      stepEl.textContent = (i + 1) + " of " + questions.length;
+      div.appendChild(stepEl);
+
+      var qEl = document.createElement("div");
+      qEl.className = "q-text";
+      qEl.textContent = q.q;
+      div.appendChild(qEl);
+
+      if (q.sub) {
+        var subEl = document.createElement("div");
+        subEl.className = "q-sub";
+        subEl.textContent = q.sub;
+        div.appendChild(subEl);
+      }
+
+      if (q.type === "choice") {
+        var opts = document.createElement("div");
+        opts.className = "opts";
+        for (var oi = 0; oi < q.opts.length; oi++) {
+          (function(oi) {
+            var btn = document.createElement("button");
+            btn.className = "opt";
+            btn.dataset.qi = i;
+            btn.dataset.oi = oi;
+            btn.textContent = q.opts[oi];
+            btn.onclick = function() { pickOpt(this); };
+            opts.appendChild(btn);
+          })(oi);
+        }
+        div.appendChild(opts);
+
+      } else if (q.type === "tel") {
+        // Init state
+        phoneState[i] = { countryIdx: 0, rawInput: "" };
+        var defaultCountry = COUNTRIES[0];
+
+        var wrap = document.createElement("div");
+        wrap.className = "phone-wrap";
+
+        var cs = document.createElement("div");
+        cs.className = "country-select";
+
+        var cbtn = document.createElement("button");
+        cbtn.type = "button";
+        cbtn.className = "country-btn";
+        cbtn.id = "cbtn-" + i;
+
+        var flagSpan = document.createElement("span");
+        flagSpan.id = "cs-flag-" + i;
+        flagSpan.textContent = defaultCountry.emoji;
+
+        var codeSpan = document.createElement("span");
+        codeSpan.id = "cs-code-" + i;
+        codeSpan.textContent = defaultCountry.dial;
+
+        var arrowSpan = document.createElement("span");
+        arrowSpan.className = "cs-arrow";
+        arrowSpan.textContent = "\u25BE";
+
+        cbtn.appendChild(flagSpan);
+        cbtn.appendChild(codeSpan);
+        cbtn.appendChild(arrowSpan);
+        cbtn.onclick = (function(qi) {
+          return function(e) { e.stopPropagation(); toggleDropdown(qi); };
+        })(i);
+        cs.appendChild(cbtn);
+
+        var dd = document.createElement("div");
+        dd.className = "country-dropdown";
+        dd.id = "cd-" + i;
+
+        for (var ci = 0; ci < COUNTRIES.length; ci++) {
+          (function(c, ci, qi) {
+            var opt = document.createElement("div");
+            opt.className = "country-opt";
+            var nameSpan = document.createElement("span");
+            nameSpan.textContent = c.emoji + " " + c.name;
+            var dialSpan = document.createElement("span");
+            dialSpan.className = "dial";
+            dialSpan.textContent = c.dial;
+            opt.appendChild(nameSpan);
+            opt.appendChild(dialSpan);
+            opt.onclick = function(e) { e.stopPropagation(); selectCountry(qi, ci); };
+            dd.appendChild(opt);
+          })(COUNTRIES[ci], ci, i);
+        }
+
+        cs.appendChild(dd);
+        wrap.appendChild(cs);
+
+        var inp = document.createElement("input");
+        inp.type = "tel";
+        inp.className = "q-input";
+        inp.id = "inp-" + i;
+        inp.placeholder = defaultCountry.example;
+        inp.oninput = (function(qi) { return function() { onPhoneInput(qi); }; })(i);
+        wrap.appendChild(inp);
+
+        div.appendChild(wrap);
+
+        // Hint line
+        var hint = document.createElement("div");
+        hint.className = "phone-hint";
+        hint.id = "phone-hint-" + i;
+        hint.textContent = "e.g. " + defaultCountry.example;
+        div.appendChild(hint);
+
+      } else {
+        var ta = document.createElement("textarea");
+        ta.className = "q-input";
+        ta.id = "inp-" + i;
+        ta.placeholder = q.placeholder || "";
+        ta.oninput = (function(qi) { return function() { pickText(qi, this.value); }; })(i);
+        div.appendChild(ta);
+      }
+
+      container.appendChild(div);
+    })(i);
+  }
+}
+
+function toggleDropdown(qi) {
+  var dd = document.getElementById("cd-" + qi);
+  if (dd.classList.contains("open")) { dd.classList.remove("open"); } else { dd.classList.add("open"); }
+}
+
+function selectCountry(qi, countryIdx) {
+  phoneState[qi].countryIdx = countryIdx;
+  var country = COUNTRIES[countryIdx];
+  document.getElementById("cs-flag-" + qi).textContent = country.emoji;
+  document.getElementById("cs-code-" + qi).textContent = country.dial;
+  document.getElementById("cd-" + qi).classList.remove("open");
+
+  // Update placeholder and hint
+  var inp = document.getElementById("inp-" + qi);
+  if (inp) inp.placeholder = country.example;
+  var hint = document.getElementById("phone-hint-" + qi);
+  if (hint) {
+    hint.textContent = "e.g. " + country.example;
+    hint.className = "phone-hint";
+  }
+
+  pickPhone(qi);
+}
+
+function pickOpt(el) {
+  if (isTransitioning) return;
+  var qi = +el.dataset.qi;
+  var oi = +el.dataset.oi;
+  answers[questions[qi].id] = { val: oi, text: questions[qi].opts[oi] };
+  var btns = document.querySelectorAll("[data-qi='" + qi + "']");
+  for (var b = 0; b < btns.length; b++) { btns[b].classList.remove("sel"); }
+  el.classList.add("sel");
+}
+
+function pickText(qi, val) {
+  answers[questions[qi].id] = { val: -1, text: val };
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+
+function begin() {
+  document.getElementById("progress-track").style.display = "flex";
+  document.getElementById("nav-area").style.display = "flex";
+  cur = 0;
+  updateProgress();
+  updateNav();
+  var slides = document.querySelectorAll(".slide");
+  for (var s = 0; s < slides.length; s++) { slides[s].classList.remove("active","exit-up","exit-down"); }
+  document.getElementById("sq-0").classList.add("active");
+}
+
+function goToQ(idx, direction) {
+  if (isTransitioning) return;
+  isTransitioning = true;
+  var currentSlide = document.getElementById("sq-" + cur);
+  var nextSlide    = document.getElementById("sq-" + idx);
+  if (currentSlide) {
+    currentSlide.classList.add(direction === "forward" ? "exit-up" : "exit-down");
+    currentSlide.classList.remove("active");
+  }
+  setTimeout(function() {
+    if (currentSlide) currentSlide.classList.remove("exit-up","exit-down");
+    cur = idx;
+    updateProgress();
+    updateNav();
+    if (nextSlide) {
+      nextSlide.style.transform = direction === "forward" ? "translateY(30px)" : "translateY(-30px)";
+      nextSlide.style.opacity = "0";
+      nextSlide.classList.add("active");
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          nextSlide.style.transform = "";
+          nextSlide.style.opacity = "";
+          isTransitioning = false;
+        });
+      });
+    } else { isTransitioning = false; }
+  }, 420);
+}
+
+function goNext() {
+  if (isTransitioning) return;
+  var q = questions[cur];
+
+  if (q.type === "choice") {
+    if (answers[q.id] === undefined) { shake(); return; }
+
+  } else if (q.type === "tel") {
+    var inp = document.getElementById("inp-" + cur);
+    if (!inp || !inp.value.trim()) {
+      inp && inp.classList.add("error");
+      shake(); return;
+    }
+    phoneState[cur].rawInput = inp.value.trim();
+    var res = validatePhone(cur);
+    if (!res.valid) {
+      inp.classList.add("error");
+      var hint = document.getElementById("phone-hint-" + cur);
+      if (hint) { hint.textContent = res.hint; hint.className = "phone-hint invalid"; }
+      shake(); return;
+    }
+    inp.classList.remove("error");
+    pickPhone(cur);
+
+  } else {
+    var inp2 = document.getElementById("inp-" + cur);
+    if (!inp2 || !inp2.value.trim()) { shake(); return; }
+    answers[q.id] = { val: -1, text: inp2.value.trim() };
+  }
+
+  if (cur < questions.length - 1) { goToQ(cur + 1, "forward"); } else { showChecking(); }
+}
+
+function goBack() {
+  if (isTransitioning || cur === 0) return;
+  goToQ(cur - 1, "backward");
+}
+
+function showChecking() {
+  if (isTransitioning) return;
+  isTransitioning = true;
+  var currentSlide = document.getElementById("sq-" + cur);
+  if (currentSlide) { currentSlide.classList.add("exit-up"); currentSlide.classList.remove("active"); }
+  document.getElementById("nav-area").style.display = "none";
+  document.getElementById("progress-track").style.display = "none";
+  setTimeout(function() {
+    if (currentSlide) currentSlide.classList.remove("exit-up");
+    document.getElementById("s-check").classList.add("active");
+    isTransitioning = false;
+    sendToWebhook();
+    setTimeout(showResult, 3000);
+  }, 420);
+}
+
+function sendToWebhook() {
+  var payload = { submitted_at: new Date().toISOString(), eligible: isEligible(), applicant: {} };
+  for (var i = 0; i < questions.length; i++) {
+    var q = questions[i];
+    var ans = answers[q.id];
+    payload.applicant[q.id] = ans ? ans.text : "";
+  }
+  fetch(WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) })
+    .catch(function(e) { console.error("Webhook error:", e); });
+}
+
+function isEligible() {
+  for (var i = 0; i < questions.length; i++) {
+    var q = questions[i];
+    if (!q.disqualify) continue;
+    var ans = answers[q.id];
+    if (ans && q.disqualify.indexOf(ans.val) !== -1) return false;
+  }
+  return true;
+}
+
+function showResult() {
+  var slides = document.querySelectorAll(".slide");
+  for (var s = 0; s < slides.length; s++) { slides[s].classList.remove("active"); }
+  buildResult();
+  document.getElementById("s-result").classList.add("active");
+}
+
+function buildResult() {
+  var eligible    = isEligible();
+  var statusText  = eligible ? "\u2736 Eligible for a call" : "\u2715 Not eligible right now";
+  var statusClass = eligible ? "admitted" : "declined";
+  var title       = eligible ? "You are a good fit." : "Not the right moment yet.";
+  var sub         = eligible
+    ? "Based on your answers, you qualify for a free strategy call. I will be in touch to schedule it personally."
+    : "Based on your answers, this is not the right time for a call. Come back when your situation changes. The door stays open.";
+  var ctaLabel = eligible ? "\uD83D\uDCC5 Book my free strategy call" : "\uD83D\uDCAC Message me on WhatsApp";
+  var waMsg = encodeURIComponent("I'm back, I finished the survey!");
+  var ctaHref  = eligible ? "https://wa.me/14384102068?text=" + waMsg : "https://wa.me/14384102068?text=" + waMsg;
+
+  var result = document.getElementById("s-result");
+  result.innerHTML = "";
+
+  var header = document.createElement("div");
+  header.className = "result-header";
+  var badge = document.createElement("div");
+  badge.className = "result-status " + statusClass;
+  badge.textContent = statusText;
+  var h2 = document.createElement("h2");
+  h2.className = "result-title";
+  h2.textContent = title;
+  var p = document.createElement("p");
+  p.className = "result-sub";
+  p.textContent = sub;
+  header.appendChild(badge);
+  header.appendChild(h2);
+  header.appendChild(p);
+  result.appendChild(header);
+
+  var ctaWrap = document.createElement("div");
+  ctaWrap.className = "result-cta-wrap";
+  var cta = document.createElement("a");
+  cta.href = ctaHref;
+  cta.className = "result-cta";
+  cta.textContent = ctaLabel;
+  ctaWrap.appendChild(cta);
+  result.appendChild(ctaWrap);
+}
+
+function updateProgress() {
+  var track = document.getElementById("progress-track");
+  track.innerHTML = "";
+  for (var i = 0; i < questions.length; i++) {
+    var seg = document.createElement("div");
+    seg.className = i <= cur ? "prog-seg done" : "prog-seg";
+    track.appendChild(seg);
+  }
+}
+
+function updateNav() {
+  document.getElementById("btn-back").disabled = (cur === 0);
+}
+
+function shake() {
+  var active = document.querySelector(".slide.active");
+  if (!active) return;
+  active.style.animation = "none";
+  requestAnimationFrame(function() {
+    active.style.animation = "shake 0.35s ease";
+    setTimeout(function() { active.style.animation = ""; }, 350);
+  });
+}
+
+document.addEventListener("click", function() {
+  var dds = document.querySelectorAll(".country-dropdown.open");
+  for (var i = 0; i < dds.length; i++) { dds[i].classList.remove("open"); }
+});
+
+buildSlides();
+</script>
+</body>
+</html>
