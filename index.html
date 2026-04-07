@@ -41,8 +41,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:"DM Sans"
 .q-input::placeholder{color:var(--text-muted)}
 .q-input.error{border-color:var(--error) !important;background:rgba(251,232,232,0.5);}
 textarea.q-input{resize:none;min-height:100px;}
-
-/* Phone */
 .phone-wrap{display:flex;gap:8px;margin-bottom:6px;}
 .country-select{position:relative;flex-shrink:0;}
 .country-btn{display:flex;align-items:center;gap:6px;padding:0 14px;min-height:54px;background:rgba(255,255,255,0.7);border:1.5px solid var(--border);border-radius:14px;font-size:0.95rem;color:var(--text);cursor:pointer;backdrop-filter:blur(8px);transition:border-color 0.2s;white-space:nowrap;font-family:"DM Sans",sans-serif;}
@@ -56,12 +54,9 @@ textarea.q-input{resize:none;min-height:100px;}
 .country-opt:hover{background:var(--bg);}
 .dial{color:var(--text-muted);font-size:0.8rem;}
 .phone-wrap .q-input{flex:1;margin-bottom:0;}
-
-/* Phone hint & error */
 .phone-hint{font-size:0.75rem;color:var(--text-muted);margin-bottom:1rem;padding-left:2px;min-height:18px;transition:color 0.2s;}
 .phone-hint.valid{color:var(--green);}
 .phone-hint.invalid{color:var(--error);}
-
 #nav-area{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;padding:1rem 1.75rem 1.75rem;display:flex;align-items:center;justify-content:space-between;z-index:20;background:linear-gradient(to top,var(--bg) 70%,transparent);}
 .btn-back{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.7);border:1.5px solid var(--border);color:var(--text-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all 0.2s;}
 .btn-back:hover{border-color:var(--accent);color:var(--accent)}
@@ -91,14 +86,7 @@ textarea.q-input{resize:none;min-height:100px;}
 .result-status.admitted{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
 .result-status.declined{background:var(--red-light);color:var(--red);border:1px solid var(--red-border)}
 .result-title{font-family:"Playfair Display",serif;font-size:1.6rem;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:0.5rem;}
-.result-sub{font-size:0.85rem;color:var(--text-muted);line-height:1.6}
-.answers-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
-.answer-card{display:flex;align-items:flex-start;gap:12px;padding:0.85rem 1.1rem;border-radius:14px;border:1.5px solid var(--border);background:white;animation:slideIn 0.4s ease both;}
-@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-.ans-icon{font-size:0.9rem;margin-top:1px;flex-shrink:0;}
-.ans-body{flex:1}
-.ans-label{font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;}
-.ans-val{font-size:0.88rem;color:var(--text-soft);line-height:1.4}
+.result-sub{font-size:0.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:1.5rem;}
 .result-cta{display:block;width:100%;padding:1.1rem;font-family:"DM Sans",sans-serif;font-size:0.95rem;font-weight:500;background:var(--text);color:white;border:none;border-radius:14px;cursor:pointer;text-align:center;text-decoration:none;box-shadow:0 4px 20px rgba(28,20,16,0.2);transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.02em;}
 .result-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(28,20,16,0.25)}
 .scrollbar-hide::-webkit-scrollbar{display:none}
@@ -114,7 +102,7 @@ textarea.q-input{resize:none;min-height:100px;}
       <div class="cover-tag">Free Income Plan Survey</div>
       <h1 class="cover-title">Want a custom daily plan to reach your income goal?</h1>
       <p class="cover-sub">Fill this survey to see if I'm the right person to help you.</p>
-      <button class="cover-start" onclick="begin()">Start survey <span>&#8594;</span></button>
+      <button class="cover-start" onclick="begin()">Start survey &#8594;</button>
     </div>
     <div id="q-slides"></div>
     <div class="slide checking-slide" id="s-check">
@@ -133,21 +121,18 @@ textarea.q-input{resize:none;min-height:100px;}
 <script>
 var WEBHOOK_URL = "https://l2026businessreception.app.n8n.cloud/webhook/72e873f5-279a-42d8-8f22-0ca981dd834b";
 
-// Country config — dial prefix, digit count for local number (after stripping country code)
 var COUNTRIES = [
-  { flag: "CA", emoji: "\uD83C\uDDE8\uD83C\uDDE6", name: "Canada",        dial: "+1",    digits: 10, example: "514 000 0000",  prefixes: ["1"] },
-  { flag: "US", emoji: "\uD83C\uDDFA\uD83C\uDDF8", name: "United States", dial: "+1",    digits: 10, example: "212 000 0000",  prefixes: ["1"] },
-  { flag: "SA", emoji: "\uD83C\uDDF8\uD83C\uDDE6", name: "Saudi Arabia",  dial: "+966",  digits: 9,  example: "050 000 0000", prefixes: ["966", "00966"] }
+  { flag:"CA", emoji:"\uD83C\uDDE8\uD83C\uDDE6", name:"Canada",        dial:"+1",   digits:10, example:"514 000 0000",  prefixes:["1"] },
+  { flag:"US", emoji:"\uD83C\uDDFA\uD83C\uDDF8", name:"United States", dial:"+1",   digits:10, example:"212 000 0000",  prefixes:["1"] },
+  { flag:"SA", emoji:"\uD83C\uDDF8\uD83C\uDDE6", name:"Saudi Arabia",  dial:"+966", digits:9,  example:"050 000 0000", prefixes:["966","00966"] }
 ];
 
-// Maps a typed prefix to a COUNTRIES index
-// Priority: longest match wins
 var PREFIX_MAP = [
-  { prefix: "00966", idx: 2 },
-  { prefix: "+966",  idx: 2 },
-  { prefix: "966",   idx: 2 },
-  { prefix: "+1",    idx: 0 },
-  { prefix: "1",     idx: 0 },
+  { prefix:"00966", idx:2 },
+  { prefix:"+966",  idx:2 },
+  { prefix:"966",   idx:2 },
+  { prefix:"+1",    idx:0 },
+  { prefix:"1",     idx:0 }
 ];
 
 var questions = [
@@ -163,80 +148,47 @@ var questions = [
 ];
 
 var answers = {};
-var phoneState = {}; // qi -> { countryIdx, rawInput }
+var phoneState = {};
 var cur = 0;
 var isTransitioning = false;
 
-// ─── Phone helpers ───────────────────────────────────────────────────────────
+function digitsOnly(str) { return str.replace(/\D/g,""); }
 
-function digitsOnly(str) {
-  return str.replace(/\D/g, "");
-}
-
-// Strip known dial prefix from a digit-only string and return remainder
-function stripDialPrefix(digits, country) {
-  var code = digitsOnly(country.dial); // e.g. "966" or "1"
-  if (digits.startsWith(code)) return digits.slice(code.length);
-  return digits;
-}
-
-// Detect country from raw input. Returns country index or -1.
 function detectCountryFromInput(raw) {
-  // Try longest prefix first
   for (var i = 0; i < PREFIX_MAP.length; i++) {
-    var entry = PREFIX_MAP[i];
-    if (raw.startsWith(entry.prefix)) return entry.idx;
+    if (raw.startsWith(PREFIX_MAP[i].prefix)) return PREFIX_MAP[i].idx;
   }
   return -1;
 }
 
-// Validate phone: returns { valid, hint }
 function validatePhone(qi) {
   var state = phoneState[qi];
-  if (!state) return { valid: false, hint: "" };
+  if (!state) return { valid:false, hint:"" };
   var country = COUNTRIES[state.countryIdx];
   var raw = state.rawInput || "";
-  if (!raw) return { valid: false, hint: "" };
-
+  if (!raw) return { valid:false, hint:"" };
   var digits = digitsOnly(raw);
-
-  // Strip country code if user typed it in
   var local = digits;
   var codeDigits = digitsOnly(country.dial);
-  if (local.startsWith(codeDigits) && local.length > codeDigits.length) {
-    local = local.slice(codeDigits.length);
-  }
-
-  // Also handle 00 + code prefix (e.g. 00966)
+  if (local.startsWith(codeDigits) && local.length > codeDigits.length) local = local.slice(codeDigits.length);
   var doubleZero = "00" + codeDigits;
-  if (local.startsWith("00" + codeDigits)) {
-    local = local.slice(doubleZero.length);
-  }
-
-  // Saudi: leading 0 is allowed (050…) — strip it if it makes length match
-  if (country.flag === "SA" && local.startsWith("0") && local.length === country.digits + 1) {
-    local = local.slice(1);
-  }
-
-  if (local.length === 0) return { valid: false, hint: "Enter your number — e.g. " + country.example };
-  if (local.length < country.digits) return { valid: false, hint: local.length + " / " + country.digits + " digits" };
-  if (local.length > country.digits) return { valid: false, hint: "Too many digits (" + local.length + " entered, " + country.digits + " expected)" };
-
-  return { valid: true, hint: "✓ Looks good" };
+  if (local.startsWith(doubleZero)) local = local.slice(doubleZero.length);
+  if (country.flag === "SA" && local.startsWith("0") && local.length === country.digits + 1) local = local.slice(1);
+  if (local.length === 0) return { valid:false, hint:"Enter your number — e.g. " + country.example };
+  if (local.length < country.digits) return { valid:false, hint:local.length + " / " + country.digits + " digits" };
+  if (local.length > country.digits) return { valid:false, hint:"Too many digits (" + local.length + " entered, " + country.digits + " expected)" };
+  return { valid:true, hint:"✓ Looks good" };
 }
 
-// Save answer + update hint display
 function pickPhone(qi) {
   var state = phoneState[qi];
   if (!state) return;
   var country = COUNTRIES[state.countryIdx];
   var raw = state.rawInput || "";
-  answers[questions[qi].id] = { val: -1, text: country.dial + " " + raw };
-
+  answers[questions[qi].id] = { val:-1, text:country.dial + " " + raw };
   var hint = document.getElementById("phone-hint-" + qi);
   var inp  = document.getElementById("inp-" + qi);
   if (!hint || !inp) return;
-
   var res = validatePhone(qi);
   if (!raw) {
     hint.textContent = "e.g. " + country.example;
@@ -249,21 +201,17 @@ function pickPhone(qi) {
   } else {
     hint.textContent = res.hint;
     hint.className = "phone-hint invalid";
-    inp.classList.remove("error"); // only show red on submit attempt
+    inp.classList.remove("error");
   }
 }
 
-// Called on every keystroke — auto-detect country from typed prefix
 function onPhoneInput(qi) {
   var inp = document.getElementById("inp-" + qi);
   if (!inp) return;
   var raw = inp.value;
   phoneState[qi].rawInput = raw;
-
-  // Try to auto-detect country
   var detected = detectCountryFromInput(raw.trim());
   if (detected !== -1 && detected !== phoneState[qi].countryIdx) {
-    // Switch country automatically
     phoneState[qi].countryIdx = detected;
     var country = COUNTRIES[detected];
     var flagEl = document.getElementById("cs-flag-" + qi);
@@ -271,24 +219,13 @@ function onPhoneInput(qi) {
     var cbtn   = document.getElementById("cbtn-" + qi);
     if (flagEl) flagEl.textContent = country.emoji;
     if (codeEl) codeEl.textContent = country.dial;
-    if (cbtn) {
-      cbtn.classList.add("auto-changed");
-      setTimeout(function() { cbtn.classList.remove("auto-changed"); }, 600);
-    }
-    // Update placeholder
+    if (cbtn) { cbtn.classList.add("auto-changed"); setTimeout(function(){ cbtn.classList.remove("auto-changed"); }, 600); }
     if (inp) inp.placeholder = country.example;
-    // Update hint
     var hint = document.getElementById("phone-hint-" + qi);
-    if (hint) {
-      hint.textContent = "Switched to " + country.name;
-      hint.className = "phone-hint valid";
-    }
+    if (hint) { hint.textContent = "Switched to " + country.name; hint.className = "phone-hint valid"; }
   }
-
   pickPhone(qi);
 }
-
-// ─── Slide building ──────────────────────────────────────────────────────────
 
 function buildSlides() {
   var container = document.getElementById("q-slides");
@@ -298,24 +235,20 @@ function buildSlides() {
       var div = document.createElement("div");
       div.className = "slide";
       div.id = "sq-" + i;
-
       var stepEl = document.createElement("div");
       stepEl.className = "q-step";
       stepEl.textContent = (i + 1) + " of " + questions.length;
       div.appendChild(stepEl);
-
       var qEl = document.createElement("div");
       qEl.className = "q-text";
       qEl.textContent = q.q;
       div.appendChild(qEl);
-
       if (q.sub) {
         var subEl = document.createElement("div");
         subEl.className = "q-sub";
         subEl.textContent = q.sub;
         div.appendChild(subEl);
       }
-
       if (q.type === "choice") {
         var opts = document.createElement("div");
         opts.className = "opts";
@@ -326,52 +259,39 @@ function buildSlides() {
             btn.dataset.qi = i;
             btn.dataset.oi = oi;
             btn.textContent = q.opts[oi];
-            btn.onclick = function() { pickOpt(this); };
+            btn.onclick = function(){ pickOpt(this); };
             opts.appendChild(btn);
           })(oi);
         }
         div.appendChild(opts);
-
       } else if (q.type === "tel") {
-        // Init state
-        phoneState[i] = { countryIdx: 0, rawInput: "" };
+        phoneState[i] = { countryIdx:0, rawInput:"" };
         var defaultCountry = COUNTRIES[0];
-
         var wrap = document.createElement("div");
         wrap.className = "phone-wrap";
-
         var cs = document.createElement("div");
         cs.className = "country-select";
-
         var cbtn = document.createElement("button");
         cbtn.type = "button";
         cbtn.className = "country-btn";
         cbtn.id = "cbtn-" + i;
-
         var flagSpan = document.createElement("span");
         flagSpan.id = "cs-flag-" + i;
         flagSpan.textContent = defaultCountry.emoji;
-
         var codeSpan = document.createElement("span");
         codeSpan.id = "cs-code-" + i;
         codeSpan.textContent = defaultCountry.dial;
-
         var arrowSpan = document.createElement("span");
         arrowSpan.className = "cs-arrow";
         arrowSpan.textContent = "\u25BE";
-
         cbtn.appendChild(flagSpan);
         cbtn.appendChild(codeSpan);
         cbtn.appendChild(arrowSpan);
-        cbtn.onclick = (function(qi) {
-          return function(e) { e.stopPropagation(); toggleDropdown(qi); };
-        })(i);
+        cbtn.onclick = (function(qi){ return function(e){ e.stopPropagation(); toggleDropdown(qi); }; })(i);
         cs.appendChild(cbtn);
-
         var dd = document.createElement("div");
         dd.className = "country-dropdown";
         dd.id = "cd-" + i;
-
         for (var ci = 0; ci < COUNTRIES.length; ci++) {
           (function(c, ci, qi) {
             var opt = document.createElement("div");
@@ -383,40 +303,33 @@ function buildSlides() {
             dialSpan.textContent = c.dial;
             opt.appendChild(nameSpan);
             opt.appendChild(dialSpan);
-            opt.onclick = function(e) { e.stopPropagation(); selectCountry(qi, ci); };
+            opt.onclick = function(e){ e.stopPropagation(); selectCountry(qi, ci); };
             dd.appendChild(opt);
           })(COUNTRIES[ci], ci, i);
         }
-
         cs.appendChild(dd);
         wrap.appendChild(cs);
-
         var inp = document.createElement("input");
         inp.type = "tel";
         inp.className = "q-input";
         inp.id = "inp-" + i;
         inp.placeholder = defaultCountry.example;
-        inp.oninput = (function(qi) { return function() { onPhoneInput(qi); }; })(i);
+        inp.oninput = (function(qi){ return function(){ onPhoneInput(qi); }; })(i);
         wrap.appendChild(inp);
-
         div.appendChild(wrap);
-
-        // Hint line
         var hint = document.createElement("div");
         hint.className = "phone-hint";
         hint.id = "phone-hint-" + i;
         hint.textContent = "e.g. " + defaultCountry.example;
         div.appendChild(hint);
-
       } else {
         var ta = document.createElement("textarea");
         ta.className = "q-input";
         ta.id = "inp-" + i;
         ta.placeholder = q.placeholder || "";
-        ta.oninput = (function(qi) { return function() { pickText(qi, this.value); }; })(i);
+        ta.oninput = (function(qi){ return function(){ pickText(qi, this.value); }; })(i);
         div.appendChild(ta);
       }
-
       container.appendChild(div);
     })(i);
   }
@@ -424,7 +337,7 @@ function buildSlides() {
 
 function toggleDropdown(qi) {
   var dd = document.getElementById("cd-" + qi);
-  if (dd.classList.contains("open")) { dd.classList.remove("open"); } else { dd.classList.add("open"); }
+  dd.classList.contains("open") ? dd.classList.remove("open") : dd.classList.add("open");
 }
 
 function selectCountry(qi, countryIdx) {
@@ -433,16 +346,10 @@ function selectCountry(qi, countryIdx) {
   document.getElementById("cs-flag-" + qi).textContent = country.emoji;
   document.getElementById("cs-code-" + qi).textContent = country.dial;
   document.getElementById("cd-" + qi).classList.remove("open");
-
-  // Update placeholder and hint
   var inp = document.getElementById("inp-" + qi);
   if (inp) inp.placeholder = country.example;
   var hint = document.getElementById("phone-hint-" + qi);
-  if (hint) {
-    hint.textContent = "e.g. " + country.example;
-    hint.className = "phone-hint";
-  }
-
+  if (hint) { hint.textContent = "e.g. " + country.example; hint.className = "phone-hint"; }
   pickPhone(qi);
 }
 
@@ -450,17 +357,15 @@ function pickOpt(el) {
   if (isTransitioning) return;
   var qi = +el.dataset.qi;
   var oi = +el.dataset.oi;
-  answers[questions[qi].id] = { val: oi, text: questions[qi].opts[oi] };
+  answers[questions[qi].id] = { val:oi, text:questions[qi].opts[oi] };
   var btns = document.querySelectorAll("[data-qi='" + qi + "']");
-  for (var b = 0; b < btns.length; b++) { btns[b].classList.remove("sel"); }
+  for (var b = 0; b < btns.length; b++) btns[b].classList.remove("sel");
   el.classList.add("sel");
 }
 
 function pickText(qi, val) {
-  answers[questions[qi].id] = { val: -1, text: val };
+  answers[questions[qi].id] = { val:-1, text:val };
 }
-
-// ─── Navigation ──────────────────────────────────────────────────────────────
 
 function begin() {
   document.getElementById("progress-track").style.display = "flex";
@@ -469,7 +374,7 @@ function begin() {
   updateProgress();
   updateNav();
   var slides = document.querySelectorAll(".slide");
-  for (var s = 0; s < slides.length; s++) { slides[s].classList.remove("active","exit-up","exit-down"); }
+  for (var s = 0; s < slides.length; s++) slides[s].classList.remove("active","exit-up","exit-down");
   document.getElementById("sq-0").classList.add("active");
 }
 
@@ -478,10 +383,7 @@ function goToQ(idx, direction) {
   isTransitioning = true;
   var currentSlide = document.getElementById("sq-" + cur);
   var nextSlide    = document.getElementById("sq-" + idx);
-  if (currentSlide) {
-    currentSlide.classList.add(direction === "forward" ? "exit-up" : "exit-down");
-    currentSlide.classList.remove("active");
-  }
+  if (currentSlide) { currentSlide.classList.add(direction === "forward" ? "exit-up" : "exit-down"); currentSlide.classList.remove("active"); }
   setTimeout(function() {
     if (currentSlide) currentSlide.classList.remove("exit-up","exit-down");
     cur = idx;
@@ -508,28 +410,23 @@ function goNext() {
 
   if (q.type === "choice") {
     if (answers[q.id] === undefined) { shake(); return; }
-
   } else if (q.type === "tel") {
-    var inp = document.getElementById("inp-" + cur);
-    if (!inp || !inp.value.trim()) {
-      inp && inp.classList.add("error");
-      shake(); return;
-    }
-    phoneState[cur].rawInput = inp.value.trim();
+    var telInp = document.getElementById("inp-" + cur);
+    if (!telInp || !telInp.value.trim()) { telInp && telInp.classList.add("error"); shake(); return; }
+    phoneState[cur].rawInput = telInp.value.trim();
     var res = validatePhone(cur);
     if (!res.valid) {
-      inp.classList.add("error");
-      var hint = document.getElementById("phone-hint-" + cur);
-      if (hint) { hint.textContent = res.hint; hint.className = "phone-hint invalid"; }
+      telInp.classList.add("error");
+      var telHint = document.getElementById("phone-hint-" + cur);
+      if (telHint) { telHint.textContent = res.hint; telHint.className = "phone-hint invalid"; }
       shake(); return;
     }
-    inp.classList.remove("error");
+    telInp.classList.remove("error");
     pickPhone(cur);
-
   } else {
-    var inp2 = document.getElementById("inp-" + cur);
-    if (!inp2 || !inp2.value.trim()) { shake(); return; }
-    answers[q.id] = { val: -1, text: inp2.value.trim() };
+    var textInp = document.getElementById("inp-" + cur);
+    if (!textInp || !textInp.value.trim()) { shake(); return; }
+    answers[q.id] = { val:-1, text:textInp.value.trim() };
   }
 
   if (cur < questions.length - 1) { goToQ(cur + 1, "forward"); } else { showChecking(); }
@@ -557,14 +454,13 @@ function showChecking() {
 }
 
 function sendToWebhook() {
-  var payload = { submitted_at: new Date().toISOString(), eligible: isEligible(), applicant: {} };
+  var payload = { submitted_at:new Date().toISOString(), eligible:isEligible(), applicant:{} };
   for (var i = 0; i < questions.length; i++) {
-    var q = questions[i];
-    var ans = answers[q.id];
-    payload.applicant[q.id] = ans ? ans.text : "";
+    var ans = answers[questions[i].id];
+    payload.applicant[questions[i].id] = ans ? ans.text : "";
   }
   fetch(WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) })
-    .catch(function(e) { console.error("Webhook error:", e); });
+    .catch(function(e){ console.error("Webhook error:", e); });
 }
 
 function isEligible() {
@@ -579,22 +475,23 @@ function isEligible() {
 
 function showResult() {
   var slides = document.querySelectorAll(".slide");
-  for (var s = 0; s < slides.length; s++) { slides[s].classList.remove("active"); }
+  for (var s = 0; s < slides.length; s++) slides[s].classList.remove("active");
   buildResult();
   document.getElementById("s-result").classList.add("active");
 }
 
 function buildResult() {
-  var eligible    = isEligible();
+  var eligible = isEligible();
+  var waMsg = encodeURIComponent("I'm back, I finished the survey!");
+  var ctaHref = "https://wa.me/14384102068?text=" + waMsg;
+
   var statusText  = eligible ? "\u2736 Eligible for a call" : "\u2715 Not eligible right now";
   var statusClass = eligible ? "admitted" : "declined";
-  var title       = eligible ? "You are a good fit." : "Not the right moment yet.";
-  var sub         = eligible
-    ? "Based on your answers, you qualify for a free strategy call. I will be in touch to schedule it personally."
-    : "Based on your answers, this is not the right time for a call. Come back when your situation changes. The door stays open.";
-  var ctaLabel = eligible ? "\uD83D\uDCC5 Book my free strategy call" : "\uD83D\uDCAC Message me on WhatsApp";
-  var waMsg = encodeURIComponent("I'm back, I finished the survey!");
-  var ctaHref  = eligible ? "https://wa.me/14384102068?text=" + waMsg : "https://wa.me/14384102068?text=" + waMsg;
+  var title = eligible ? "You are a good fit." : "Not the right moment yet.";
+  var sub = eligible
+    ? "Based on your answers, it looks like you could benefit from a personalized plan.\nThe next step is to go through your situation together and map out the exact actions for you."
+    : "Based on your answers, this might not be the best fit right now.\nI\u2019d recommend starting with the guide and focusing on applying the basics first.";
+  var ctaLabel = eligible ? "\uD83D\uDCC5 Let\u2019s plan our meeting" : "\uD83D\uDCAC Message me on WhatsApp";
 
   var result = document.getElementById("s-result");
   result.innerHTML = "";
@@ -609,6 +506,7 @@ function buildResult() {
   h2.textContent = title;
   var p = document.createElement("p");
   p.className = "result-sub";
+  p.style.whiteSpace = "pre-line";
   p.textContent = sub;
   header.appendChild(badge);
   header.appendChild(h2);
@@ -645,13 +543,13 @@ function shake() {
   active.style.animation = "none";
   requestAnimationFrame(function() {
     active.style.animation = "shake 0.35s ease";
-    setTimeout(function() { active.style.animation = ""; }, 350);
+    setTimeout(function(){ active.style.animation = ""; }, 350);
   });
 }
 
 document.addEventListener("click", function() {
   var dds = document.querySelectorAll(".country-dropdown.open");
-  for (var i = 0; i < dds.length; i++) { dds[i].classList.remove("open"); }
+  for (var i = 0; i < dds.length; i++) dds[i].classList.remove("open");
 });
 
 buildSlides();
