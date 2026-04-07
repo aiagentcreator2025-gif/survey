@@ -185,7 +185,12 @@ function pickPhone(qi) {
   if (!state) return;
   var country = COUNTRIES[state.countryIdx];
   var raw = state.rawInput || "";
-  answers[questions[qi].id] = { val:-1, text:country.dial + " " + raw };
+  var local = digitsOnly(raw);
+  var codeDigits = digitsOnly(country.dial);
+  if (local.startsWith(codeDigits) && local.length > codeDigits.length) local = local.slice(codeDigits.length);
+  if (local.startsWith("00" + codeDigits)) local = local.slice(("00" + codeDigits).length);
+  if (local.startsWith("0") && local.length === country.digits + 1) local = local.slice(1);
+  answers[questions[qi].id] = { val:-1, text:country.dial + " " + local };
   var hint = document.getElementById("phone-hint-" + qi);
   var inp  = document.getElementById("inp-" + qi);
   if (!hint || !inp) return;
